@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Advokasi Sejawat Keperawatan NTB v3.0</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; margin: 0; padding: 15px; color: #2c3e50; line-height: 1.6; }
+        .container { max-width: 750px; margin: 0 auto; background: white; padding: 25px; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        h1 { color: #1a5276; text-align: center; margin-bottom: 5px; font-size: 24px; }
+        p.subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; font-size: 13px; font-weight: 500; }
+        .security-badge { background-color: #27ae60; color: white; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 25px; font-size: 13px; }
+        label { font-weight: bold; display: block; margin-top: 15px; color: #34495e; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #d5dbdb; border-radius: 8px; box-sizing: border-box; font-size: 14px; background-color: #fcfcfc; }
+        input:focus, textarea:focus { border-color: #3498db; outline: none; }
+        .file-upload-wrapper { background-color: #f8f9f9; padding: 15px; border: 2px dashed #bdc3c7; border-radius: 8px; margin-top: 5px; text-align: center; }
+        .file-info { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
+        #previewImg { max-width: 100%; max-height: 250px; margin-top: 15px; border-radius: 6px; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        button { background-color: #2980b9; color: white; border: none; padding: 14px; font-size: 15px; border-radius: 8px; width: 100%; margin-top: 20px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background-color: #2471a3; }
+        .result-section { display: none; margin-top: 30px; padding: 20px; background-color: #fcf8e3; border-top: 4px solid #f1c40f; border-radius: 8px; }
+        .law-box { background-color: #ebf5fb; padding: 15px; border-left: 5px solid #3498db; margin-top: 15px; border-radius: 4px; }
+        .law-title { font-weight: bold; color: #21618c; margin-bottom: 5px; font-size: 14px; }
+        
+        /* Tambahan Style untuk Tombol Fitur Baru */
+        .action-buttons { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .btn-wa { background-color: #25d366; flex: 1; min-width: 180px; }
+        .btn-wa:hover { background-color: #20ba5a; }
+        .btn-print { background-color: #e67e22; flex: 1; min-width: 180px; }
+        .btn-print:hover { background-color: #d35400; }
+        .btn-reset { background-color: #7f8c8d; width: 100%; margin-top: 15px; }
+        .btn-reset:hover { background-color: #616a6b; }
+
+        /* Pengaturan Cetak agar rapi saat di-PDF-kan */
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; }
+            form, .security-badge, button, .action-buttons, p.subtitle { display: none !important; }
+            .result-section { display: block !important; border: none; background: white; padding: 0; margin: 0; }
+            .law-box { background: #f9f9f9; border-left: 3px solid #333; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🛡️ Advokasi Otomatis Sejawat</h1>
+    <p class="subtitle">Analisis Hukum Eksklusif RSUD Mutiara Sukma & Faskes Provinsi NTB</p>
+    
+    <div class="security-badge">🔒 SISTEM AMAN: Keluhan & File Bukti Anda TIDAK DIKIRIM ke internet. Analisis berjalan lokal dan rahasia di HP Anda.</div>
+
+    <form id="advokasiForm">
+        <!-- STATUS PEGAWAI -->
+        <label for="statusPegawai">1. Status Kepegawaian Anda:</label>
+        <select id="statusPegawai" required>
+            <option value="PNS">PNS (Pegawai Negeri Sipil)</option>
+            <option value="PPPK">PPPK (Pegawai Pemerintah dengan Perjanjian Kerja)</option>
+            <option value="Kontrak">Tenaga Kontrak / Honorer / BLUD</option>
+        </select>
+
+        <!-- INPUT JAM KERJA -->
+        <label for="inputJam">2. Estimasi Total Jam Kerja Anda Bulan Ini (Jam):</label>
+        <input type="number" id="inputJam" placeholder="Contoh: 185" required>
+
+        <!-- INPUT TEKS KELUHAN -->
+        <label for="inputKasus">3. Ketik Masalah Kedinasan atau Keuangan Anda (Sidang Etik / Intimidasi / Roster Kerja / Pemotongan Jaspel / TPP):</label>
+        <textarea id="inputKasus" rows="6" placeholder="Ceritakan kronologi singkat masalah Anda di sini tanpa menyebutkan nama asli Anda..." required></textarea>
+
+        <!-- INPUT UNGGAH BUKTI DOKUMEN/FOTO -->
+        <label>4. Unggah Bukti Roster Dinas / Slip Gaji / Dokumen Sidang (Opsional):</label>
+        <div class="file-upload-wrapper">
+            <input type="file" id="inputBukti" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" onchange="validasiDanPreviewFile()">
+            <div class="file-info">Format yang didukung: <strong>JPG, PNG, PDF, DOC, DOCX</strong> (Maksimal Ukuran: 5 MB)</div>
+            <center><img id="previewImg" alt="Pratinjau Bukti Jadwal/Dokumen"></center>
+            <div id="fileStatus" style="margin-top: 10px; font-weight: bold; color: #27ae60; display: none;"></div>
+        </div>
+
+        <button type="button" onclick="prosesAdvokasiOtomatis()">Kirim & Analisis Hukum Otomatis</button>
+    </form>
+
+    <!-- AREA JAWABAN OTOMATIS -->
+    <div id="boxJawaban" class="result-section">
+        <h3 style="margin-top: 0; color: #7d6608; border-bottom: 2px solid #f1c40f; padding-bottom: 8px;">⚖️ Hasil Analisis & Perlindungan Hukum Instan</h3>
+        
+        <!-- Hasil Analisis Jam Kerja -->
+        <div id="analisisJam"></div>
+
+        <!-- Hasil Analisis Hak Keuangan & Kesejahteraan -->
+        <div id="analisisKeuangan" style="margin-top: 20px;"></div>
+
+        <!-- Hasil Analisis Konten Deteksi Kasus -->
+        <div id="analisisKasus" style="margin-top: 20px;"></div>
+
+        <!-- FITUR AKSI TAMBAHAN -->
+        <div class="action-buttons">
+            <!-- Tombol Konsultasi WhatsApp Lanjutan -->
+            <button type="button" class="btn-wa" onclick="hubungiAdvokat()">💬 Hubungi Advokat PPNI NTB</button>
+            <!-- Tombol Cetak / Simpan PDF -->
+            <button type="button" class="btn-print" onclick="cetakHasilAnalisis()">🖨️ Cetak / Simpan PDF</button>
+        </div>
+
+        <!-- Tombol Reset -->
+        <button class="btn-reset" onclick="resetForm()">Buka Aduan Baru</button>
+    </div>
+</div>
+
+<script>
+    function validasiDanPreviewFile() {
+        const fileInput = document.getElementById('inputBukti');
+        const previewImg = document.getElementById('previewImg');
+        const fileStatus = document.getElementById('fileStatus');
+        const files = fileInput.files;
+
+        if (!files || files.length === 0) {
+            previewImg.style.display = 'none';
+            fileStatus.style.display = 'none';
+            return;
+        }
+
+        const file = files[0];
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran file terlalu besar! Maksimal ukuran file adalah 5 MB.');
+            fileInput.value = ""; 
+            previewImg.style.display = 'none';
+            fileStatus.style.display = 'none';
+            return;
+        }
+
+        fileStatus.style.display = 'block';
+        fileStatus.innerHTML = `📎 File Terbaca: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            previewImg.style.display = 'none';
+        }
+    }
+
+    function prosesAdvokasiOtomatis() {
+        const status = document.getElementById('statusPegawai').value;
+        const jamInput = document.getElementById('inputJam').value;
+        const teks = document.getElementById('inputKasus').value.trim().toLowerCase();
+        const fileInput = document.getElementById('inputBukti');
+        
+        if (!jamInput || !teks) {
+            alert('Mohon isi estimasi jam kerja dan detail masalah Anda terlebih dahulu.');
+            return;
+        }
+
+        const jam = parseFloat(jamInput);
+        const boxJawaban = document.getElementById('boxJawaban');
+        const analisisJam = document.getElementById('analisisJam');
+        const analisisKeuangan = document.getElementById('analisisKeuangan');
+        const analisisKasus = document.getElementById('analisisKasus');
+
+        boxJawaban.style.display = 'block';
+        boxJawaban.scrollIntoView({ behavior: 'smooth' });
+
+        const batasPergub = 150; 
+        let lampiranStatus = (fileInput.files && fileInput.files.length > 0) ? `<br><span style="color:#2e4053; font-size:12px;">📁 <em>Bukti dokumen fisik terbaca dalam sistem lokal.</em></span>` : "";
+
+        if (jam > batasPergub) {
+            const surplus = jam - batasPergub;
+            analisisJam.innerHTML = `⚠️ <strong>Kelebihan Jam Kerja Terdeteksi:</strong> Anda bekerja selama ${jam} jam bulan ini. Berdasarkan regulasi internal, standar efektif adalah ${batasPergub} jam. Terdapat kelebihan <strong>${surplus} jam</strong> yang berpotensi menjadi hak lembur atau kompensasi cuti harian. ${lampiranStatus}`;
+        } else {
+            analisisJam.innerHTML = `✅ <strong>Jam Kerja Normal:</strong> Durasi kerja Anda (${jam} jam) masih memenuhi batas wajar operasional bulanan faskes. ${lampiranStatus}`;
+        }
+
+        let hasilKeuangan = "<strong>Analisis Kesejahteraan:</strong> Tidak mendeteksi keluhan finansial spesifik. Pastikan hak Jaspel/TPP Anda diterima sesuai target kinerja.";
